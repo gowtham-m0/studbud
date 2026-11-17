@@ -4,6 +4,7 @@ import logging
 import time
 import uuid
 from contextlib import asynccontextmanager
+from urllib.parse import urlsplit
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -117,10 +118,22 @@ async def browser_request_guards(request: Request, call_next):
     """Reject unknown browser origins and enforce CSRF double-submit tokens."""
     settings = get_settings()
     origin = request.headers.get("origin")
-    if origin and origin not in settings.frontend_origin_list:
-        return JSONResponse(status_code=403, content={"detail": "Origin not allowed."})
+    if origin:
+        parsed_origin = urlsplit(origin)
+        same_origin = (
+            parsed_origin.scheme in {"http", "https"} and parsed_origin.netloc == request.url.netloc
+        )
+        if not same_origin and origin not in settings.frontend_origin_list:
+            return JSONResponse(status_code=403, content={"detail": "Origin not allowed."})
 
-    if request.method not in SAFE_METHODS and settings.session_cookie_name in request.cookies:
+    # Admin endpoints authenticate with a custom header, not a cookie session.
+    # CSRF does not apply; the secret cannot be set by a cross-site form.
+    is_admin_request = request.url.path.startswith("/api/admin/")
+    if (
+        request.method not in SAFE_METHODS
+        and not is_admin_request
+        and settings.session_cookie_name in request.cookies
+    ):
         cookie_token = request.cookies.get(settings.csrf_cookie_name, "")
         header_token = request.headers.get("x-csrf-token", "")
         if (

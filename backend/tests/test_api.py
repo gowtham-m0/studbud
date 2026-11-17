@@ -50,6 +50,27 @@ async def sign_in(client: httpx.AsyncClient, key: str) -> None:
     assert response.status_code == 204, response.text
 
 
+async def test_same_origin_admin_post(client: httpx.AsyncClient) -> None:
+    response = await client.post(
+        "/api/admin/users",
+        headers={**ADMIN_HEADERS, "Origin": "http://testserver"},
+        json={"display_name": "Swagger User"},
+    )
+    assert response.status_code == 201, response.text
+
+
+async def test_admin_post_with_session_skips_csrf(client: httpx.AsyncClient) -> None:
+    issued = await create_user_with_key(client)
+    await sign_in(client, issued["key"])
+
+    response = await client.post(
+        "/api/admin/users",
+        headers={**ADMIN_HEADERS, "Origin": "http://testserver"},
+        json={"display_name": "Admin While Signed In"},
+    )
+    assert response.status_code == 201, response.text
+
+
 async def test_admin_requires_secret(client: httpx.AsyncClient) -> None:
     response = await client.post("/api/admin/users", json={"display_name": "Nope"})
     assert response.status_code == 401
