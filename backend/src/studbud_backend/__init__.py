@@ -1,0 +1,1 @@
+"""StudBud backend package."""

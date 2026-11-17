@@ -1,0 +1,37 @@
+{
+  "name": "networks-sample",
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Explain the TCP three-way handshake",
+      "document": "sample_networks.pdf",
+      "pages": [2],
+      "section": "TCP Three-Way Handshake",
+      "answerable": true
+    },
+    {
+      "id": "q2",
+      "question": "What does a zero window mean in flow control?",
+      "document": "sample_networks.pdf",
+      "pages": [3],
+      "section": "Flow Control",
+      "answerable": true
+    },
+    {
+      "id": "q3",
+      "question": "How do transport protocols begin a conversation?",
+      "document": "sample_networks.pdf",
+      "pages": [1],
+      "section": "Connection Establishment",
+      "answerable": true
+    },
+    {
+      "id": "q4",
+      "question": "Explain BGP route reflector clusters",
+      "document": "sample_networks.pdf",
+      "pages": [2],
+      "section": "TCP Three-Way Handshake",
+      "answerable": false
+    }
+  ]
+}

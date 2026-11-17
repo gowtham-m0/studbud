@@ -1,0 +1,9 @@
+name = "studbud-keepalive"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+[vars]
+HEALTH_URL = "https://studbud-api.onrender.com/healthz"

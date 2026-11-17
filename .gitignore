@@ -1,0 +1,40 @@
+# Environments
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+backend/.venv/
+backend/storage/
+backend/storage-test/
+backend/.hf-space/
+storage/
+storage-test/
+.impeccable/review/
+.impeccable/mocks/
+.impeccable/design-review/
+.impeccable/questions/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+
+# Node / Next.js
+node_modules/
+frontend/web/.next/
+frontend/web/out/
+.vercel/
+
+# Local agent/design tooling
+.claude/
+.fastembed/
+
+# Tooling
+.DS_Store
+Thumbs.db
+*.log

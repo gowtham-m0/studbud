@@ -1,0 +1,83 @@
+services:
+  - type: web
+    name: studbud-api
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /healthz
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: ENVIRONMENT
+        value: production
+      - key: SENTRY_DSN
+        sync: false
+      - key: KEY_PEPPER
+        sync: false
+      - key: ADMIN_API_SECRET
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_CHAT_MODEL
+        value: openai/gpt-oss-120b
+      - key: EMBEDDING_MODEL
+        value: nomic-embed-text-v1_5
+      - key: EMBEDDING_PROVIDER
+        value: gemini
+      - key: GEMINI_EMBEDDING_MODEL
+        value: gemini-embedding-001
+      - key: LOCAL_EMBEDDING_MODEL
+        value: nomic-ai/nomic-embed-text-v1.5-Q
+      - key: VISION_PROVIDER
+        value: auto
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_VISION_MODEL
+        value: gemini-3.5-flash
+      - key: GROQ_VISION_MODEL
+        value: meta-llama/llama-4-scout-17b-16e-instruct
+      - key: CHUNK_TARGET_TOKENS
+        value: "650"
+      - key: CHUNK_OVERLAP_TOKENS
+        value: "100"
+      - key: FIGURE_CAPTIONING_ENABLED
+        value: "true"
+      - key: OCR_ENABLED
+        value: "true"
+      - key: OCR_LANGUAGE
+        value: eng
+      - key: OCR_DPI
+        value: "200"
+      - key: USER_MAX_DOCUMENTS
+        value: "50"
+      - key: USER_MAX_PAGES
+        value: "5000"
+      - key: USER_MAX_STORAGE_MB
+        value: "1024"
+      - key: USER_DAILY_UPLOADS
+        value: "20"
+      - key: USER_DAILY_EXPLANATIONS
+        value: "100"
+      - key: STORAGE_BACKEND
+        value: r2
+      - key: R2_ENDPOINT
+        sync: false
+      - key: R2_BUCKET
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: FRONTEND_ORIGINS
+        sync: false
+      - key: COOKIE_SECURE
+        value: true
+      - key: COOKIE_SAMESITE
+        value: none
+      - key: AUTO_CREATE_TABLES
+        value: false
+      - key: AUTO_MIGRATE
+        value: true
+      - key: WORKER_ENABLED
+        value: true
