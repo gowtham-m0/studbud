@@ -50,6 +50,22 @@ async def sign_in(client: httpx.AsyncClient, key: str) -> None:
     assert response.status_code == 204, response.text
 
 
+async def test_admin_list_user_keys(client: httpx.AsyncClient) -> None:
+    issued = await create_user_with_key(client, "Key List")
+
+    response = await client.get(
+        f"/api/admin/users/{issued['user']['id']}/keys", headers=ADMIN_HEADERS
+    )
+    assert response.status_code == 200, response.text
+
+    keys = response.json()
+    assert len(keys) == 1
+    assert keys[0]["id"] == issued["id"]
+    assert keys[0]["key_prefix"].startswith("SB_")
+    assert "key" not in keys[0]
+    assert "key_hash" not in keys[0]
+
+
 async def test_admin_list_users_returns_top_level_id(
     client: httpx.AsyncClient,
 ) -> None:

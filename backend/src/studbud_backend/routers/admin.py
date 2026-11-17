@@ -102,6 +102,29 @@ async def list_users(db: AsyncSession = Depends(get_db)) -> AdminUserList:
     )
 
 
+@router.get(
+    "/users/{user_id}/keys",
+    response_model=list[KeyMetadata],
+    dependencies=[Depends(require_admin)],
+)
+async def list_user_keys(
+    user_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+) -> list[KeyMetadata]:
+    user = await db.get(User, user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    keys = (
+        await db.scalars(
+            select(AccessKey)
+            .where(AccessKey.user_id == user_id)
+            .order_by(AccessKey.created_at.desc())
+        )
+    ).all()
+    return [KeyMetadata.model_validate(key) for key in keys]
+
+
 @router.patch(
     "/users/{user_id}",
     response_model=UserOut,
