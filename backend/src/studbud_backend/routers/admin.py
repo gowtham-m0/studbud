@@ -94,7 +94,7 @@ async def list_users(db: AsyncSession = Depends(get_db)) -> AdminUserList:
     return AdminUserList(
         users=[
             AdminUserOut(
-                user=UserOut.model_validate(user),
+                **UserOut.model_validate(user).model_dump(),
                 keys=keys_by_user.get(user.id, []),
             )
             for user in users

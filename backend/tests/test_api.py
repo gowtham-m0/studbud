@@ -50,6 +50,20 @@ async def sign_in(client: httpx.AsyncClient, key: str) -> None:
     assert response.status_code == 204, response.text
 
 
+async def test_admin_list_users_returns_top_level_id(
+    client: httpx.AsyncClient,
+) -> None:
+    issued = await create_user_with_key(client, "List Shape")
+    response = await client.get("/api/admin/users", headers=ADMIN_HEADERS)
+    assert response.status_code == 200, response.text
+
+    users = response.json()["users"]
+    match = next(user for user in users if user["id"] == issued["user"]["id"])
+    assert "user" not in match
+    assert match["display_name"] == "List Shape"
+    assert match["keys"][0]["id"] == issued["id"]
+
+
 async def test_same_origin_admin_post(client: httpx.AsyncClient) -> None:
     response = await client.post(
         "/api/admin/users",

@@ -56,8 +56,7 @@ class IssuedKeyOut(BaseModel):
     expires_at: datetime
 
 
-class AdminUserOut(BaseModel):
-    user: UserOut
+class AdminUserOut(UserOut):
     keys: list[KeyMetadata]
 
 
