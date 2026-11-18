@@ -45,9 +45,10 @@ async def create_user_with_key(client: httpx.AsyncClient, name: str = "Test Lear
     return {"user": user, **issued}
 
 
-async def sign_in(client: httpx.AsyncClient, key: str) -> None:
+async def sign_in(client: httpx.AsyncClient, key: str) -> httpx.Response:
     response = await client.post("/api/auth/sign-in", json={"key": key})
     assert response.status_code == 204, response.text
+    return response
 
 
 async def test_admin_list_user_keys(client: httpx.AsyncClient) -> None:
@@ -99,6 +100,27 @@ async def test_admin_post_with_session_skips_csrf(client: httpx.AsyncClient) -> 
         json={"display_name": "Admin While Signed In"},
     )
     assert response.status_code == 201, response.text
+
+
+async def test_sign_in_returns_csrf_token_header(client: httpx.AsyncClient) -> None:
+    issued = await create_user_with_key(client)
+    response = await sign_in(client, issued["key"])
+
+    token = response.headers.get("X-CSRF-Token")
+    assert token
+    assert token == client.cookies.get("sb_csrf")
+
+
+async def test_sign_in_with_stale_session_skips_csrf(client: httpx.AsyncClient) -> None:
+    issued = await create_user_with_key(client)
+
+    await sign_in(client, issued["key"])
+    assert client.cookies.get("sb_session")
+
+    # Re-authenticating while a session cookie is present must not be blocked by
+    # the CSRF guard; sign-in does not rely on the cookie for authentication.
+    again = await client.post("/api/auth/sign-in", json={"key": issued["key"]})
+    assert again.status_code == 204, again.text
 
 
 async def test_admin_requires_secret(client: httpx.AsyncClient) -> None:

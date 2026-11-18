@@ -129,9 +129,13 @@ async def browser_request_guards(request: Request, call_next):
     # Admin endpoints authenticate with a custom header, not a cookie session.
     # CSRF does not apply; the secret cannot be set by a cross-site form.
     is_admin_request = request.url.path.startswith("/api/admin/")
+    # Sign-in authenticates with the key in the request body. A stale session
+    # cookie must not block re-authentication, so CSRF does not apply here either.
+    is_sign_in = request.url.path.rstrip("/") == "/api/auth/sign-in"
     if (
         request.method not in SAFE_METHODS
         and not is_admin_request
+        and not is_sign_in
         and settings.session_cookie_name in request.cookies
     ):
         cookie_token = request.cookies.get(settings.csrf_cookie_name, "")
@@ -155,7 +159,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "X-CSRF-Token", "X-Admin-Secret", "X-Request-ID"],
-    expose_headers=["X-Request-ID"],
+    expose_headers=["X-Request-ID", "X-CSRF-Token"],
 )
 
 app.include_router(auth.router)

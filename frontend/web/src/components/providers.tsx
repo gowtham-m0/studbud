@@ -101,12 +101,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const signIn = useCallback(async (key: string) => {
+    await authApi.signIn(key);
     try {
-      await authApi.signIn(key);
       const next = await authApi.me();
       setSession(next);
     } catch (error) {
       setSession(null);
+      if (error instanceof ApiError && error.status === 401) {
+        throw new ApiError(
+          401,
+          "The key was accepted, but the browser did not store the session cookie. Allow cookies for the API and try again.",
+        );
+      }
       throw error;
     }
   }, []);

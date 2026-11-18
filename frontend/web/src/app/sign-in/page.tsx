@@ -37,7 +37,7 @@ export default function SignInPage() {
     } catch (cause) {
       if (cause instanceof ApiError) {
         if (cause.status === 401) {
-          setError("That key is invalid, expired, or revoked. Check it and try again.");
+          setError(cause.detail || "That key is invalid, expired, or revoked. Check it and try again.");
         } else if (cause.status === 429) {
           setError("Too many attempts. Wait a moment, then try again.");
         } else if (cause.status === 0) {

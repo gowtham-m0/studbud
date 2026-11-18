@@ -92,6 +92,9 @@ async def sign_in(
         httponly=False,
         **cookie_kwargs,
     )
+    # Cross-origin frontends cannot read the API host's cookie jar. Expose the
+    # token in a response header so the client can replay it as a request header.
+    response.headers["X-CSRF-Token"] = csrf_token
 
 
 @router.post("/sign-out", status_code=status.HTTP_204_NO_CONTENT)

@@ -30,6 +30,24 @@ function readCookie(name: string): string | null {
 }
 
 const UNSAFE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+const CSRF_STORAGE_KEY = "studbud-csrf";
+
+function readStoredCsrf(): string | null {
+  try {
+    return localStorage.getItem(CSRF_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function storeCsrf(token: string | null): void {
+  try {
+    if (token) localStorage.setItem(CSRF_STORAGE_KEY, token);
+    else localStorage.removeItem(CSRF_STORAGE_KEY);
+  } catch {
+    // Storage can be unavailable; the readable cookie is the primary source.
+  }
+}
 
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const method = (init.method ?? "GET").toUpperCase();
@@ -39,7 +57,9 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     headers.set("Content-Type", "application/json");
   }
   if (UNSAFE_METHODS.has(method)) {
-    const csrf = readCookie("sb_csrf");
+    // Same-origin clients read the cookie. Cross-origin clients cannot, so
+    // fall back to the token handed back in the sign-in response header.
+    const csrf = readCookie("sb_csrf") ?? readStoredCsrf();
     if (csrf) headers.set("X-CSRF-Token", csrf);
   }
 
@@ -49,6 +69,9 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     credentials: "include",
     cache: "no-store",
   });
+
+  const issuedCsrf = response.headers.get("X-CSRF-Token");
+  if (issuedCsrf) storeCsrf(issuedCsrf);
 
   if (!response.ok) {
     let detail = response.statusText || "Request failed.";
@@ -84,7 +107,13 @@ export const authApi = {
   me: () => api<SessionInfo>("/api/auth/me"),
   signIn: (key: string) =>
     api<void>("/api/auth/sign-in", { method: "POST", body: JSON.stringify({ key }) }),
-  signOut: () => api<void>("/api/auth/sign-out", { method: "POST" }),
+  signOut: async () => {
+    try {
+      await api<void>("/api/auth/sign-out", { method: "POST" });
+    } finally {
+      storeCsrf(null);
+    }
+  },
 };
 
 export const documentsApi = {
